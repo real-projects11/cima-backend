@@ -1,4 +1,4 @@
-1# cima. — backend (puestos, lock, cola, admin manual)
+# cima. — backend (puestos, lock, cola, admin manual)
 
 Esto cubre los puntos 1 y 2 que hablamos: persistencia real de los 5 puestos + sistema de
 lock de 18 min con cola FIFO. Todavía **no** incluye la verificación automática contra
@@ -18,9 +18,11 @@ TronGrid/Tronscan — eso queda para el siguiente paso.
   ese proyecto, con las 48hs de garantía arrancando en ese momento.
 - **`POST /api/admin/positions/[slot]/reject`** — si el pago no llegó o no coincide, liberás
   el puesto (y si hay alguien en la cola, se le ofrece automáticamente).
-- **`GET /api/cron/cleanup`** — pensado para que lo llame el cron de Vercel cada 1 minuto:
-  libera locks vencidos donde nadie avisó que pagó, y le ofrece el turno al siguiente de la
-  cola, al mismo precio (tal como definiste en el prompt original).
+- **`GET /api/cron/cleanup`** — endpoint opcional para forzar la limpieza de locks
+  vencidos a mano (o desde un cron externo gratuito si algún día lo querés más agresivo).
+  **No hace falta usarlo**: la limpieza ya pasa sola cada vez que alguien pide
+  `/api/positions` (carga de página o el polling cada 20s del front), así que no
+  depende de ningún cron pago de Vercel.
 - **`/admin`** — página mínima para ver los pagos pendientes y confirmar/rechazar con un
   click, sin necesitar Redis CLI ni nada técnico.
 
@@ -35,9 +37,8 @@ TronGrid/Tronscan — eso queda para el siguiente paso.
    las variables de entorno del proyecto.
 4. **Variables de entorno propias** (Vercel → Settings → Environment Variables):
    - `ADMIN_TOKEN` — inventá un string largo random, es tu "contraseña" para `/admin`.
-   - `CRON_SECRET` — otro string random. Vercel lo usa automáticamente para autenticar el
-     cron job contra `/api/cron/cleanup` (ver `vercel.json`, ya está configurado para
-     correr cada 1 minuto).
+   - `CRON_SECRET` — otro string random. Es opcional (solo hace falta si algún día llamás
+     `/api/cron/cleanup` desde afuera), pero no cuesta nada dejarlo cargado.
 5. **Redeploy** después de cargar las variables.
 6. Entrá a `https://tu-proyecto.vercel.app/admin`, pegá tu `ADMIN_TOKEN` ahí, y listo.
 

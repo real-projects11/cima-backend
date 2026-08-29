@@ -1,6 +1,7 @@
 import { getAllPositions } from '../../../lib/positions';
+import { allowCors } from '../../../lib/cors';
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Método no permitido' });
   try {
     const positions = await getAllPositions();
@@ -9,3 +10,5 @@ export default async function handler(req, res) {
     res.status(500).json({ error: err.message });
   }
 }
+
+export default allowCors(handler);

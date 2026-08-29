@@ -1,6 +1,7 @@
 import { markPaid } from '../../../../lib/positions';
+import { allowCors } from '../../../../lib/cors';
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método no permitido' });
   const { slot } = req.query;
   const { reservationId } = req.body || {};
@@ -14,3 +15,5 @@ export default async function handler(req, res) {
     res.status(400).json({ error: err.message });
   }
 }
+
+export default allowCors(handler);
