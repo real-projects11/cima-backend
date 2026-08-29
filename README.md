@@ -1,4 +1,4 @@
-# cima. — backend (puestos, lock, cola, admin manual)
+1# cima. — backend (puestos, lock, cola, admin manual)
 
 Esto cubre los puntos 1 y 2 que hablamos: persistencia real de los 5 puestos + sistema de
 lock de 18 min con cola FIFO. Todavía **no** incluye la verificación automática contra
