@@ -18,6 +18,9 @@ TronGrid/Tronscan — eso queda para el siguiente paso.
   ese proyecto, con las 48hs de garantía arrancando en ese momento.
 - **`POST /api/admin/positions/[slot]/reject`** — si el pago no llegó o no coincide, liberás
   el puesto (y si hay alguien en la cola, se le ofrece automáticamente).
+- **`POST /api/admin/positions/[slot]/evict`** — (protegido con `ADMIN_TOKEN`) saca a alguien
+  que YA está ocupando un puesto (contenido inapropiado, acuerdo cancelado, lo que sea). El
+  puesto queda libre de inmediato. Hay un botón "Vaciar puesto" para esto en `/admin`.
 - **`GET /api/cron/cleanup`** — endpoint opcional para forzar la limpieza de locks
   vencidos a mano (o desde un cron externo gratuito si algún día lo querés más agresivo).
   **No hace falta usarlo**: la limpieza ya pasa sola cada vez que alguien pide
