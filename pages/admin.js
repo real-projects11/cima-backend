@@ -11,21 +11,36 @@ const RANK_COLORS = {
 export default function Admin() {
   const [token, setToken] = useState('');
   const [positions, setPositions] = useState([]);
+  const [pending, setPending] = useState([]);
   const [msg, setMsg] = useState(null);
   const [busySlot, setBusySlot] = useState(null);
 
   useEffect(() => {
     setToken(localStorage.getItem('cima_admin_token') || '');
+  }, []);
+
+  useEffect(() => {
     load();
     const id = setInterval(load, 10000);
     return () => clearInterval(id);
-  }, []);
+  }, [token]);
 
   async function load() {
     try {
       const res = await fetch('/api/positions');
       const data = await res.json();
       setPositions(data.positions || []);
+    } catch (e) {}
+
+    if (!token) { setPending([]); return; }
+    try {
+      const res2 = await fetch('/api/admin/pending', { headers: { 'x-admin-token': token } });
+      if (res2.ok) {
+        const data2 = await res2.json();
+        setPending(data2.pending || []);
+      } else {
+        setPending([]);
+      }
     } catch (e) {}
   }
 
@@ -53,7 +68,14 @@ export default function Admin() {
     load();
   }
 
-  const pending = positions.filter((p) => p.locked && p.lockStatus === 'awaiting_confirmation');
+  function domainFor(platform) {
+    return platform === 'instagram' ? 'instagram.com/' : platform === 'x' ? 'x.com/' : platform === 'youtube' ? 'youtube.com/@' : '';
+  }
+
+  function fmtDate(ts) {
+    if (!ts) return '';
+    return new Date(ts).toLocaleString('es-AR');
+  }
 
   return (
     <div className="wrap">
@@ -83,7 +105,22 @@ export default function Admin() {
           return (
             <div className="card pendingCard" key={p.rank} style={{ borderColor: c.bg }}>
               <div className="badge" style={{ background: c.bg }}>#{p.rank}</div>
-              <div className="pendingLabel">Puesto en revisión</div>
+
+              <div className="amountBox">
+                <div className="amountLabel">Buscá EXACTO este monto en la wallet</div>
+                <div className="amountValue">${Number(p.amount).toFixed(6)} USDT</div>
+              </div>
+
+              <div className="detailGrid">
+                <div><span className="detailLabel">Proyecto</span>{p.title}</div>
+                <div><span className="detailLabel">Descripción</span>{p.desc}</div>
+                <div><span className="detailLabel">Destino</span>{domainFor(p.platform)}{p.handle}</div>
+                <div><span className="detailLabel">Texto del botón</span>{p.btnText}</div>
+                <div><span className="detailLabel">Oferta acordada</span>${p.bid}</div>
+                {p.contact && <div><span className="detailLabel">Contacto</span>{p.contact}</div>}
+                <div><span className="detailLabel">Pedido</span>{fmtDate(p.createdAt)}</div>
+              </div>
+
               <div className="btnRow">
                 <button
                   className="btn primary"
@@ -161,6 +198,11 @@ export default function Admin() {
         .badge { display: inline-flex; width: fit-content; border-radius: 8px; padding: 3px 9px; font-weight: 800; font-size: 13px; color: #fff; margin-bottom: 10px; }
         .pendingCard, .posCard { border-width: 1.5px; }
         .pendingLabel { font-weight: 700; margin-bottom: 12px; }
+        .amountBox { background: #FCEEDD; border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; }
+        .amountLabel { font-size: 11px; font-weight: 700; color: #A05A0C; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 3px; }
+        .amountValue { font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 700; color: #8A4B00; }
+        .detailGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; margin-bottom: 16px; font-size: 13px; }
+        .detailLabel { display: block; font-size: 10.5px; font-weight: 700; color: #9CA0A6; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 1px; }
         .btnRow { display: flex; gap: 8px; }
         .btn { padding: 9px 14px; border-radius: 100px; font-weight: 700; font-size: 13px; border: none; cursor: pointer; }
         .btn.primary { background: #12664F; color: #fff; }
