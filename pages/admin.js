@@ -10,13 +10,18 @@ const RANK_COLORS = {
 
 export default function Admin() {
   const [token, setToken] = useState('');
+  const [tokenDraft, setTokenDraft] = useState('');
+  const [checkingToken, setCheckingToken] = useState(false);
+  const [tokenStatus, setTokenStatus] = useState(null); // null | 'ok' | 'error'
   const [positions, setPositions] = useState([]);
   const [pending, setPending] = useState([]);
   const [msg, setMsg] = useState(null);
   const [busySlot, setBusySlot] = useState(null);
 
   useEffect(() => {
-    setToken(localStorage.getItem('cima_admin_token') || '');
+    const saved = localStorage.getItem('cima_admin_token') || '';
+    setToken(saved);
+    setTokenDraft(saved);
   }, []);
 
   useEffect(() => {
@@ -47,6 +52,25 @@ export default function Admin() {
   function saveToken(v) {
     setToken(v);
     localStorage.setItem('cima_admin_token', v);
+  }
+
+  async function submitToken() {
+    const v = tokenDraft.trim();
+    setCheckingToken(true);
+    setTokenStatus(null);
+    try {
+      const res = await fetch('/api/admin/pending', { headers: { 'x-admin-token': v } });
+      if (res.ok) {
+        saveToken(v);
+        setTokenStatus('ok');
+        load();
+      } else {
+        setTokenStatus('error');
+      }
+    } catch (e) {
+      setTokenStatus('error');
+    }
+    setCheckingToken(false);
   }
 
   async function act(slot, action, confirmMsg) {
@@ -86,13 +110,28 @@ export default function Admin() {
 
       <div className="card">
         <label className="fieldLabel">Admin token</label>
-        <input
-          type="password"
-          value={token}
-          onChange={(e) => saveToken(e.target.value)}
-          placeholder="Pegá tu ADMIN_TOKEN acá"
-          className="input"
-        />
+        <div style={{ display: 'flex', gap: 8 }}>
+          <input
+            type="password"
+            autoComplete="off"
+            value={tokenDraft}
+            onChange={(e) => { setTokenDraft(e.target.value); setTokenStatus(null); }}
+            onKeyDown={(e) => { if (e.key === 'Enter') submitToken(); }}
+            placeholder="Pegá tu ADMIN_TOKEN acá"
+            className="input"
+            style={{ flex: 1 }}
+          />
+          <button
+            onClick={submitToken}
+            disabled={checkingToken || !tokenDraft}
+            className="input"
+            style={{ width: 'auto', padding: '0 16px', cursor: 'pointer', fontWeight: 600 }}
+          >
+            {checkingToken ? 'Verificando…' : 'Ingresar'}
+          </button>
+        </div>
+        {tokenStatus === 'ok' && <p style={{ color: '#146B52', marginTop: 8 }}>Token válido ✓</p>}
+        {tokenStatus === 'error' && <p style={{ color: '#B34A25', marginTop: 8 }}>Token inválido o vacío — probá copiarlo y pegarlo de nuevo.</p>}
       </div>
 
       {msg && <div className={`toast ${msg.ok ? 'ok' : 'err'}`}>{msg.text}</div>}
