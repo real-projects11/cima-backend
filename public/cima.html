@@ -1131,8 +1131,8 @@ setInterval(async ()=>{
    ============================================================ */
 (function(){
   const DESKTOP_BREAKPOINT = 860; // mismo criterio que fuego criollo
-  const TOTAL_FRAMES_DESKTOP = 0; // <-- poné acá la cantidad real de frames (ej: 180)
-  const TOTAL_FRAMES_MOBILE = 0;  // <-- poné acá la cantidad real de frames (ej: 180)
+  const TOTAL_FRAMES_DESKTOP = 240; // <-- poné acá la cantidad real de frames (ej: 180)
+  const TOTAL_FRAMES_MOBILE = 239;  // <-- poné acá la cantidad real de frames (ej: 180)
 
   const isDesktop = window.innerWidth >= DESKTOP_BREAKPOINT;
   const CARPETA = isDesktop ? 'frames/bg-desktop' : 'frames/bg-mobile';
@@ -1151,8 +1151,8 @@ setInterval(async ()=>{
      el frame pasa a seguir 1:1 el scroll, a la velocidad que el usuario
      mueva el dedo. Si se queda quieto un rato, retoma el autoplay lento
      desde el frame en el que quedó. */
-  const AUTOPLAY_MS_POR_FRAME = 110; // más alto = autoplay más lento
-  const IDLE_PARA_RETOMAR = 900;     // ms sin scroll para retomar el autoplay
+  const AUTOPLAY_MS_POR_FRAME = 0; // más alto = autoplay más lento
+  const IDLE_PARA_RETOMAR = 0;     // ms sin scroll para retomar el autoplay
   let lastInteraction = -Infinity;
   let autoplayDir = 1;
   let autoplayAccum = 0;
