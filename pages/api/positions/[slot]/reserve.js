@@ -6,7 +6,7 @@ async function handler(req, res) {
   const { slot } = req.query;
   const { platform, handle, title, desc, btnText, contact, bid, link, ticker } = req.body || {};
 
-  if (!platform || !handle || !title || !desc || !btnText || !link || !ticker) {
+  if (!platform || !handle || !title || !desc || !btnText || !ticker) {
     return res.status(400).json({ error: 'Faltan campos del proyecto' });
   }
 
