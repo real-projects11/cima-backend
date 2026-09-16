@@ -154,6 +154,7 @@ export default function Admin() {
                 <div><span className="detailLabel">Proyecto</span>{p.title}</div>
                 <div><span className="detailLabel">Descripción</span>{p.desc}</div>
                 <div><span className="detailLabel">Destino</span>{domainFor(p.platform)}{p.handle}</div>
+                {p.link && <div><span className="detailLabel">Link externo</span>{p.link}</div>}
                 <div><span className="detailLabel">Texto del botón</span>{p.btnText}</div>
                 <div><span className="detailLabel">Oferta acordada</span>${p.bid}</div>
                 {p.contact && <div><span className="detailLabel">Contacto</span>{p.contact}</div>}
