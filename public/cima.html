@@ -10,29 +10,30 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   :root{
-    --bg:#EDEFEB;
-    --white:#FFFFFF;
-    --line:#E2E4DE;
-    --line-soft:#EAEBE6;
-    --text:#14171A;
-    --text-soft:#6B7075;
-    --text-faint:#9CA0A6;
-    --ink:#14171A;
-    --ink-dark:#000000;
+    --bg:#050505;
+    --white:#111214;
+    --line:#33363B;
+    --line-soft:#26282C;
+    --text:#E7E9EC;
+    --text-soft:#9FA5AB;
+    --text-faint:#6A6F75;
+    --ink:#E7E9EC;
+    --ink-dark:#FFFFFF;
     --silver:#C7CDD2;
     --silver-dark:#9DA5AC;
     --silver-mid:#B0B7BD;
-    --neutral-tint:#EDEEF0;
-    --disabled-bg:#DDDFD9;
-    --disabled-text:#A2A6A0;
-    --r1:#8A6300; --r1-bg:#FFCE33; --r1-tint:#FFF6D9;
-    --r2:#146B52; --r2-bg:#1C8F6E; --r2-tint:#E3F1EC;
-    --r3:#1C7A94; --r3-bg:#2B99B4; --r3-tint:#E2F1F4;
-    --r4:#6947B8; --r4-bg:#8467D6; --r4-tint:#EEEAFA;
-    --r5:#B34A25; --r5-bg:#CC6440; --r5-tint:#FAEAE3;
-    --shadow-card:0 1px 2px rgba(20,23,26,.04);
-    --shadow-sheet:0 -8px 30px rgba(20,23,26,.18);
-    --shadow-pop:0 12px 32px rgba(20,23,26,.08);
+    --neutral-tint:#1B1D21;
+    --disabled-bg:#1C1E22;
+    --disabled-text:#54585D;
+    --r1:#FFD966; --r1-bg:#FFCE33; --r1-tint:#2A2408;
+    --r2:#4FD8AC; --r2-bg:#1C8F6E; --r2-tint:#0E241D;
+    --r3:#5FC7E6; --r3-bg:#2B99B4; --r3-tint:#0D2530;
+    --r4:#B49CF0; --r4-bg:#8467D6; --r4-tint:#241C3A;
+    --r5:#F0916D; --r5-bg:#CC6440; --r5-tint:#301C14;
+    --glow-silver:0 0 22px -4px rgba(199,205,210,.55);
+    --shadow-card:0 1px 2px rgba(0,0,0,.4);
+    --shadow-sheet:0 -8px 30px rgba(0,0,0,.6);
+    --shadow-pop:0 12px 32px rgba(0,0,0,.5);
     font-family:'Inter',sans-serif;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
@@ -42,7 +43,7 @@
   a{color:inherit;text-decoration:none;}
   button{font-family:inherit;cursor:pointer;background:none;border:none;}
   input,textarea{font-family:inherit;}
-  ::selection{background:var(--silver-mid);color:#fff;}
+  ::selection{background:var(--silver-mid);color:#0B0B0D;}
 
   #app{max-width:600px;margin:0 auto;min-height:100vh;position:relative;padding-bottom:8px;}
 
@@ -54,7 +55,7 @@
   .meta-row a:hover{color:var(--text);}
 
   .brand-row{display:flex;align-items:center;justify-content:center;gap:9px;padding:14px 20px 14px;}
-  .brand-mark{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#E7E9EB,#AEB5BB);display:flex;align-items:center;justify-content:center;flex:none;}
+  .brand-mark{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#E7E9EB,#AEB5BB);display:flex;align-items:center;justify-content:center;flex:none;box-shadow:0 0 16px -3px rgba(199,205,210,.65);}
   .brand-mark svg{width:17px;height:17px;color:#20242A;}
   .brand-name{font-size:25px;font-weight:800;letter-spacing:-0.02em;color:var(--text);}
   .brand-name .dot{color:var(--ink);}
@@ -79,8 +80,8 @@
   .stepper-hero .amt{font-size:34px;font-weight:800;color:var(--ink);display:flex;align-items:baseline;gap:6px;}
   .stepper-hero .amt .cur{font-size:14px;color:var(--text-faint);font-weight:600;}
 
-  .cta-primary{width:100%;padding:16px 18px;border:none;border-radius:100px;background:linear-gradient(135deg,#E7E9EB,#AEB5BB);color:#14171A;font-size:15px;font-weight:800;box-shadow:0 8px 18px -6px rgba(20,23,26,.35);transition:transform .12s ease, background .15s ease;}
-  .cta-primary:hover{background:linear-gradient(135deg,#D8DBDE,#9DA5AC);}
+  .cta-primary{width:100%;padding:16px 18px;border:none;border-radius:100px;background:linear-gradient(135deg,#E7E9EB,#AEB5BB);color:#14171A;font-size:15px;font-weight:800;box-shadow:0 0 30px -4px rgba(199,205,210,.6);transition:transform .12s ease, background .15s ease, box-shadow .15s ease;}
+  .cta-primary:hover{background:linear-gradient(135deg,#D8DBDE,#9DA5AC);box-shadow:0 0 40px -2px rgba(199,205,210,.8);}
   .cta-primary:active{transform:scale(.985);}
 
   .secure-row{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;color:var(--text-faint);margin-top:14px;}
@@ -91,6 +92,7 @@
 
   .rank-list{padding:6px 14px 0;display:flex;flex-direction:column;gap:12px;}
   .rank-card{background:var(--white);border:1.5px solid var(--line);border-radius:16px;padding:14px 15px;box-shadow:var(--shadow-card);transition:transform .12s ease, box-shadow .12s ease;}
+  .rank-card:hover{border-color:var(--silver-mid);box-shadow:var(--glow-silver);}
   .rank-card:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(20,23,26,.07);}
   .r1{border-color:var(--r1-bg);}
   .r2{border-color:var(--r2-bg);}
@@ -117,6 +119,7 @@
   .rank-clicks .dot{width:5px;height:5px;border-radius:50%;background:#D9705A;}
 
   .rank-title{font-size:15.5px;font-weight:700;margin-bottom:3px;letter-spacing:-0.005em;}
+  .ticker-tag{display:inline-block;font-size:11px;font-weight:800;color:var(--r1);background:var(--r1-tint);padding:1px 7px;border-radius:100px;vertical-align:middle;}
   .rank-desc{font-size:13px;color:var(--text-soft);line-height:1.42;margin-bottom:11px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;}
   .rank-bottom{display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--line-soft);}
   .rank-url{font-size:12px;color:var(--text-faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -133,7 +136,7 @@
   .displace-btn svg{width:15px;height:15px;}
 
   .rank-card.neutral{border-color:var(--line);}
-  .rank-card.neutral .badge{background:#DCDFD8;color:var(--text-soft);}
+  .rank-card.neutral .badge{background:#DCDFD8;color:#4A4D50;}
   .rank-card.neutral .amt{color:var(--text);}
   .rank-card.neutral .rank-visit{color:var(--text);}
 
@@ -172,8 +175,8 @@
 
   .wiz-head{display:flex;align-items:flex-start;justify-content:space-between;padding:6px 20px 16px;}
   .wiz-head-left{display:flex;gap:11px;align-items:flex-start;}
-  .wiz-head-ico{width:34px;height:34px;border-radius:9px;background:var(--ink);display:flex;align-items:center;justify-content:center;flex:none;}
-  .wiz-head-ico svg{width:17px;height:17px;color:#fff;}
+  .wiz-head-ico{width:34px;height:34px;border-radius:9px;background:var(--neutral-tint);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;flex:none;}
+  .wiz-head-ico svg{width:17px;height:17px;color:var(--ink);}
   .wiz-head h2{font-size:17px;font-weight:800;margin-bottom:2px;}
   .wiz-head .sub{font-size:12.5px;color:var(--text-soft);}
   .progress-dots{display:flex;gap:5px;padding-top:8px;flex:none;}
@@ -210,7 +213,7 @@
   .field-hint{font-size:11.5px;color:var(--text-faint);margin-top:6px;}
 
   .btn{width:100%;padding:15px;border-radius:100px;font-size:14.5px;font-weight:700;border:none;background:var(--disabled-bg);color:var(--disabled-text);transition:all .15s ease;}
-  .btn.enabled{background:var(--ink);color:#fff;box-shadow:0 8px 18px -6px rgba(18,102,79,.45);}
+  .btn.enabled{background:var(--ink);color:#0B0B0D;box-shadow:var(--glow-silver);}
   .btn.enabled:hover{background:var(--silver-dark);}
   .btn.enabled:active{transform:scale(.985);}
   .btn-outline{background:var(--white);border:1.5px solid var(--line);color:var(--text);}
@@ -237,7 +240,7 @@
   .slot-chip.active .r{color:var(--ink);}
 
   /* confirm bottom sheet (dimmed overlay) */
-  .dim-overlay{position:fixed;inset:0;background:rgba(20,23,26,.4);z-index:60;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .18s ease;}
+  .dim-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:60;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .18s ease;}
   @media (min-width:640px){.dim-overlay{align-items:center;}}
   .sheet{width:100%;max-width:520px;background:var(--white);border-radius:22px 22px 0 0;padding:24px 22px 26px;box-shadow:var(--shadow-sheet);animation:slideUp .22s cubic-bezier(.2,.8,.2,1);}
   @media (min-width:640px){.sheet{border-radius:22px;}}
@@ -254,7 +257,7 @@
   .network-badge{display:inline-flex;align-items:center;gap:7px;background:#FCEEDD;color:#8A4B00;font-size:14.5px;font-weight:800;padding:9px 16px;border-radius:11px;margin:0 auto 16px;border:1.5px solid #F0B23D;}
   .network-badge svg{width:16px;height:16px;flex:none;}
   .network-row{display:flex;justify-content:center;}
-  .qr-box{background:var(--white);border:1.5px solid var(--line);padding:14px;border-radius:16px;width:176px;height:176px;margin:4px auto 18px;display:flex;align-items:center;justify-content:center;}
+  .qr-box{background:#fff;border:1.5px solid var(--line);padding:14px;border-radius:16px;width:176px;height:176px;margin:4px auto 18px;display:flex;align-items:center;justify-content:center;}
   .qr-box canvas,.qr-box img{width:100% !important;height:100% !important;}
   .amount-big{text-align:center;margin-bottom:14px;}
   .amount-big .n{font-family:'IBM Plex Mono',monospace;font-size:27px;font-weight:600;color:var(--ink);}
@@ -277,7 +280,7 @@
   .alt-contact a{width:36px;height:36px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--text-soft);}
   .alt-contact svg{width:15px;height:15px;}
 
-  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:11px 18px;border-radius:100px;font-size:13px;font-weight:600;z-index:100;box-shadow:0 10px 30px rgba(0,0,0,.25);animation:toastIn .2s ease;}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--white);border:1px solid var(--line);color:var(--ink);padding:11px 18px;border-radius:100px;font-size:13px;font-weight:600;z-index:100;box-shadow:var(--glow-silver);animation:toastIn .2s ease;}
   @keyframes toastIn{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
 </style>
 </head>
@@ -377,7 +380,7 @@ let showAllPositions = false;
 
 let state = {
   view: 'landing',
-  wizard: { platform:'instagram', handle:'', link:'', title:'', desc:'', btnText:'', slot:1, bid: starts[1] },
+  wizard: { platform:'instagram', handle:'', link:'', ticker:'', title:'', desc:'', btnText:'', slot:1, bid: starts[1] },
   showConfirm: false,
   reservation: null
 };
@@ -436,7 +439,7 @@ function rankCardHTML(p){
       </div>
     </div>
     ${statusTag(p)}
-    <div class="rank-title">${esc(p.name)}</div>
+    <div class="rank-title">${esc(p.name)} ${p.ticker ? `<span class="ticker-tag">$${esc(p.ticker)}</span>` : ""}</div>
     <div class="rank-desc">${esc(p.desc)}</div>
     <div class="rank-bottom">
       <div class="rank-url">${esc(p.url)}</div>
@@ -459,7 +462,7 @@ function otherCardHTML(p){
         <div class="rank-clicks"><span class="dot"></span>~${p.clicks} clicks</div>
       </div>
     </div>
-    <div class="rank-title">${esc(p.name)}</div>
+    <div class="rank-title">${esc(p.name)} ${p.ticker ? `<span class="ticker-tag">$${esc(p.ticker)}</span>` : ""}</div>
     <div class="rank-desc">${esc(p.desc)}</div>
     <div class="rank-bottom">
       <div class="rank-url">${esc(p.url)}</div>
@@ -494,7 +497,7 @@ function landingHTML(){
   </div>
 
   <div class="hero">
-    <h1>¿Cuánto pagarías por el <em>puesto #1</em> de los vibecoders?</h1>
+    <h1>¿Cuánto pagarías por el <em>puesto #1</em> de las cripto?</h1>
     <div class="stepper-hero">
       <button class="step-circle" id="hero-minus">–</button>
       <div class="amt mono">$${fmt(bidVal)}<span class="cur">USDT</span></div>
@@ -522,7 +525,7 @@ function landingHTML(){
       <a href="#">@tuusuario</a>
     </div>
     <div class="footer-legal">
-      cima. es un experimento para vibecoders. Los puestos se compran y se pierden: cualquiera puede desplazarte pagando más. Nada de lo publicado acá está revisado ni recomendado por cima. Comprar un puesto no garantiza tráfico ni resultados. Si tuviste un problema, <a href="#">mandanos un DM</a>.
+      cima. es un experimento para memecoins. Los puestos se compran y se pierden: cualquiera puede desplazarte pagando más. Nada de lo publicado acá está revisado ni recomendado por cima. Comprar un puesto no garantiza tráfico ni resultados. Si tuviste un problema, <a href="#">mandanos un DM</a>.
     </div>
   </div>`;
 }
@@ -568,9 +571,8 @@ function wizardStep1HTML(){
   const domain = domainFor(w.platform);
   const isLink = w.platform === 'link';
   const isListado = w.platform === 'listado';
-  const handleLabel = isLink ? 'URL de tu proyecto' : isListado ? 'Dónde está listada (ticker, hasta 6 letras)' : 'Usuario';
-  const handlePlaceholder = isLink ? 'tuproyecto.com' : isListado ? 'PEPE' : 'tuproyecto';
-  const handleMaxlen = isListado ? 6 : 60;
+  const handleLabel = isLink ? 'URL de tu proyecto' : isListado ? 'Dónde está listada' : 'Usuario';
+  const handlePlaceholder = isLink ? 'tuproyecto.com' : isListado ? 'pump.fun' : 'tuproyecto';
   const ready = w.platform && w.handle && w.link;
   return `
   ${wizTopbar('close-wizard')}
@@ -588,7 +590,7 @@ function wizardStep1HTML(){
       <div class="field-label"><span>${handleLabel}</span></div>
       <div class="input-wrap">
         ${domain ? `<span class="input-prefix">${domain}</span>` : ''}
-        <input type="text" id="handle-input" maxlength="${handleMaxlen}" placeholder="${handlePlaceholder}" value="${esc(w.handle)}">
+        <input type="text" id="handle-input" placeholder="${handlePlaceholder}" value="${esc(w.handle)}">
       </div>
     </div>
     <div class="field">
@@ -603,7 +605,7 @@ function wizardStep1HTML(){
 
 function wizardStep2HTML(){
   const w = state.wizard;
-  const ready = w.title && w.desc && w.btnText;
+  const ready = w.title && w.desc && w.btnText && w.ticker;
   return `
   ${wizTopbar('wizard-goto-1')}
   ${wizHead('Armá tu cima', 'Ahora: qué van a leer', 2)}
@@ -613,16 +615,22 @@ function wizardStep2HTML(){
     <h3>¿Qué querés que diga?</h3>
     <div class="desc">Un título y una línea. Las que te harían tocar a vos.</div>
     <div class="field">
+      <div class="field-label"><span>Ticker</span><span class="count">${w.ticker.length}/6</span></div>
+      <div class="desc" style="margin:-2px 0 8px;">Las 6 letras con las que se abrevia tu cripto donde está listada.</div>
+      <div class="input-wrap"><input type="text" id="ticker-input" maxlength="6" placeholder="PEPE" value="${esc(w.ticker)}" style="text-transform:uppercase;"></div>
+    </div>
+    <div class="field">
       <div class="field-label"><span>Título</span><span class="count">${w.title.length}/40</span></div>
-      <div class="input-wrap"><input type="text" id="title-input" maxlength="40" placeholder="ShipFast Boilerplate" value="${esc(w.title)}"></div>
+      <div class="input-wrap"><input type="text" id="title-input" maxlength="40" placeholder="PepeRocket (PEPRKT)" value="${esc(w.title)}"></div>
     </div>
     <div class="field">
       <div class="field-label"><span>Una línea más</span><span class="count">${w.desc.length}/110</span></div>
-      <div class="input-wrap"><textarea id="desc-input" maxlength="110" placeholder="Lanzá tu SaaS en Next.js en un fin de semana.">${esc(w.desc)}</textarea></div>
+      <div class="desc" style="margin:-2px 0 8px;">Una línea de descripción corta de tu proyecto.</div>
+      <div class="input-wrap"><textarea id="desc-input" maxlength="110" placeholder="La próxima gema de Solana. Presale abierta, liquidez bloqueada.">${esc(w.desc)}</textarea></div>
     </div>
     <div class="field">
       <div class="field-label"><span>Texto del botón</span><span class="count">${w.btnText.length}/20</span></div>
-      <div class="input-wrap"><input type="text" id="btn-input" maxlength="20" placeholder="Probar gratis" value="${esc(w.btnText)}"></div>
+      <div class="input-wrap"><input type="text" id="btn-input" maxlength="20" placeholder="Comprar ahora" value="${esc(w.btnText)}"></div>
     </div>
     <div class="btn-row">
       <button class="btn btn-outline" data-action="wizard-goto-1">Atrás</button>
@@ -659,7 +667,7 @@ function wizardStep3HTML(){
         <div class="rank-head-spacer"></div>
         <div class="rank-price-mini"><div class="amt" style="color:var(--ink)">$${fmt(w.bid)}</div></div>
       </div>
-      <div class="rank-title">${esc(w.title)}</div>
+      <div class="rank-title">${esc(w.title)} <span class="ticker-tag">$${esc(w.ticker)}</span></div>
       <div class="rank-desc" style="-webkit-line-clamp:2;">${esc(w.desc)}</div>
       <div class="rank-bottom">
         <div class="rank-url">${domain}${esc(w.handle)}</div>
@@ -818,7 +826,7 @@ function attachLandingEvents(){
     el.addEventListener('click', (e)=>{
       e.preventDefault();
       const slot = parseInt(el.getAttribute('data-slot')) || 1;
-      state.wizard = { platform:'instagram', handle:'', link:'', title:'', desc:'', btnText:'', slot, bid: starts[slot] };
+      state.wizard = { platform:'instagram', handle:'', link:'', ticker:'', title:'', desc:'', btnText:'', slot, bid: starts[slot] };
       state.view = 'w1';
       render();
     });
@@ -828,7 +836,7 @@ function attachLandingEvents(){
       const slot = parseInt(el.getAttribute('data-open-slot'));
       const target = projects.find(p=>p.rank===slot);
       const bid = target ? (target.minToDisplace ?? minToDisplace(target)) : starts[slot];
-      state.wizard = { platform:'instagram', handle:'', link:'', title:'', desc:'', btnText:'', slot, bid };
+      state.wizard = { platform:'instagram', handle:'', link:'', ticker:'', title:'', desc:'', btnText:'', slot, bid };
       state.view = 'w1';
       render();
     });
@@ -859,7 +867,7 @@ function attachLandingEvents(){
   const ctaBtn = document.querySelector('.cta-primary');
   if(ctaBtn) ctaBtn.addEventListener('click', (e)=>{
     e.preventDefault();
-    state.wizard = { platform:'instagram', handle:'', link:'', title:'', desc:'', btnText:'', slot:1, bid: state.heroBid };
+    state.wizard = { platform:'instagram', handle:'', link:'', ticker:'', title:'', desc:'', btnText:'', slot:1, bid: state.heroBid };
     state.view = 'w1';
     render();
   });
@@ -893,24 +901,26 @@ function attachWizardEvents(){
   const step1Next = document.getElementById('step1-next');
   if(step1Next) step1Next.addEventListener('click', ()=>{ if(w.platform && w.handle && w.link){ state.view='w2'; render(); } });
 
+  const tickerInput = document.getElementById('ticker-input');
   const titleInput = document.getElementById('title-input');
   const descInput = document.getElementById('desc-input');
   const btnInput = document.getElementById('btn-input');
   function syncStep2(){
+    if(tickerInput) w.ticker = tickerInput.value.toUpperCase();
     if(titleInput) w.title = titleInput.value;
     if(descInput) w.desc = descInput.value;
     if(btnInput) w.btnText = btnInput.value;
     const next = document.getElementById('step2-next');
-    const ready = w.title && w.desc && w.btnText;
+    const ready = w.title && w.desc && w.btnText && w.ticker;
     if(next){ next.disabled = !ready; next.classList.toggle('enabled', !!ready); }
     const counts = document.querySelectorAll('.field .count');
-    const lens = [w.title.length, w.desc.length, w.btnText.length];
-    const maxes = [40,110,20];
+    const lens = [w.ticker.length, w.title.length, w.desc.length, w.btnText.length];
+    const maxes = [6,40,110,20];
     counts.forEach((c,i)=>{ c.textContent = lens[i] + '/' + maxes[i]; });
   }
-  [titleInput, descInput, btnInput].forEach(el=>{ if(el) el.addEventListener('input', syncStep2); });
+  [tickerInput, titleInput, descInput, btnInput].forEach(el=>{ if(el) el.addEventListener('input', syncStep2); });
   const step2Next = document.getElementById('step2-next');
-  if(step2Next) step2Next.addEventListener('click', ()=>{ if(w.title && w.desc && w.btnText){ state.view='w3'; render(); } });
+  if(step2Next) step2Next.addEventListener('click', ()=>{ if(w.title && w.desc && w.btnText && w.ticker){ state.view='w3'; render(); } });
 
   document.querySelectorAll('.slot-chip').forEach(el=>{
     el.addEventListener('click', ()=>{
@@ -967,7 +977,7 @@ function attachConfirmEvents(){
       const result = await apiFetch(`/api/positions/${w.slot}/reserve`, {
         method:'POST',
         body: JSON.stringify({
-          platform: w.platform, handle: w.handle, link: w.link, title: w.title, desc: w.desc, btnText: w.btnText,
+          platform: w.platform, handle: w.handle, link: w.link, ticker: w.ticker, title: w.title, desc: w.desc, btnText: w.btnText,
           contact: w.handle, bid: w.bid,
         }),
       });
