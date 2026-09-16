@@ -45,7 +45,8 @@
   input,textarea{font-family:inherit;}
   ::selection{background:var(--silver-mid);color:#0B0B0D;}
 
-  #app{max-width:600px;margin:0 auto;min-height:100vh;position:relative;padding-bottom:8px;}
+  #app{max-width:600px;margin:0 auto;min-height:100vh;position:relative;padding-bottom:8px;z-index:1;}
+  .bg-canvas{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;display:block;background:#050505;}
 
   .fade-in{animation:fadeIn .28s ease both;}
   @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
@@ -289,6 +290,7 @@
 </style>
 </head>
 <body>
+<canvas id="bgCanvas" class="bg-canvas"></canvas>
 <div id="app"></div>
 
 <script>
@@ -1073,6 +1075,95 @@ setInterval(async ()=>{
     render();
   }
 }, 20000);
+
+/* ============================================================
+   FONDO ANIMADO POR SCROLL (misma técnica que "fuego criollo")
+   Un canvas fijo detrás de todo el contenido dibuja un frame
+   distinto según cuánto scrolleaste. Si no hay frames cargados
+   en la carpeta correspondiente, se pinta negro sólido — no
+   rompe nada, el sitio se ve exactamente igual que ahora.
+
+   CÓMO CARGAR TUS FRAMES:
+   1) Convertí tus 2 videos a secuencias de imágenes .webp
+      (mismo nombre que usa fuego criollo: frame_0001.webp, frame_0002.webp, etc.)
+   2) Subilas a:
+        /public/frames/bg-desktop/   → versión horizontal, para pantallas anchas
+        /public/frames/bg-mobile/    → versión vertical, para celular
+   3) Cambiá TOTAL_FRAMES_DESKTOP y TOTAL_FRAMES_MOBILE acá abajo
+      por la cantidad real de frames que generaste en cada carpeta.
+   Mientras TOTAL_FRAMES sea 0 (o falten los archivos), se ve negro sólido.
+   ============================================================ */
+(function(){
+  const DESKTOP_BREAKPOINT = 860; // mismo criterio que fuego criollo
+  const TOTAL_FRAMES_DESKTOP = 0; // <-- poné acá la cantidad real de frames (ej: 180)
+  const TOTAL_FRAMES_MOBILE = 0;  // <-- poné acá la cantidad real de frames (ej: 180)
+
+  const isDesktop = window.innerWidth >= DESKTOP_BREAKPOINT;
+  const CARPETA = isDesktop ? 'frames/bg-desktop' : 'frames/bg-mobile';
+  const TOTAL_FRAMES = isDesktop ? TOTAL_FRAMES_DESKTOP : TOTAL_FRAMES_MOBILE;
+
+  const canvas = document.getElementById('bgCanvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  let hasFrames = TOTAL_FRAMES > 0;
+  const images = new Array(TOTAL_FRAMES);
+  let currentFrame = 0;
+
+  function nombreFrame(i){
+    return `${CARPETA}/frame_${String(i + 1).padStart(4, '0')}.webp`;
+  }
+
+  function pintarNegro(){
+    ctx.fillStyle = '#050505';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+
+  function dibujar(indice){
+    if(!hasFrames){ pintarNegro(); return; }
+    const img = images[indice];
+    if(!img || !img.complete || !img.naturalWidth){ pintarNegro(); return; }
+    const cw = canvas.width, ch = canvas.height;
+    const iw = img.naturalWidth, ih = img.naturalHeight;
+    const scale = Math.max(cw / iw, ch / ih); // cover, sin deformar
+    const dw = iw * scale, dh = ih * scale;
+    const dx = (cw - dw) / 2, dy = (ch - dh) / 2;
+    pintarNegro();
+    ctx.drawImage(img, dx, dy, dw, dh);
+  }
+
+  function precargar(){
+    if(!hasFrames) return;
+    for(let i = 0; i < TOTAL_FRAMES; i++){
+      const img = new Image();
+      if(i === 0){
+        img.onerror = () => { hasFrames = false; pintarNegro(); };
+      }
+      img.src = nombreFrame(i);
+      images[i] = img;
+    }
+  }
+
+  function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    dibujar(currentFrame);
+  }
+
+  function actualizar(){
+    if(!hasFrames){ pintarNegro(); return; }
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    const progreso = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+    currentFrame = Math.min(TOTAL_FRAMES - 1, Math.round(progreso * (TOTAL_FRAMES - 1)));
+    dibujar(currentFrame);
+  }
+
+  window.addEventListener('resize', resize, { passive: true });
+  window.addEventListener('scroll', actualizar, { passive: true });
+  resize();
+  precargar();
+  actualizar();
+})();
 
 loadPositions().then(render);
 </script>
