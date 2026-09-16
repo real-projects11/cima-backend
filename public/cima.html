@@ -46,7 +46,7 @@
   ::selection{background:var(--silver-mid);color:#0B0B0D;}
 
   #app{max-width:600px;margin:0 auto;min-height:100vh;position:relative;padding-bottom:8px;z-index:1;}
-  .bg-canvas{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;display:block;background:#050505;opacity:0;transition:opacity 1.15s cubic-bezier(.22,1,.36,1);}
+  .bg-canvas{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;display:block;background:#050505;opacity:0;transition:opacity .55s cubic-bezier(.22,1,.36,1);}
   .bg-canvas.is-visible{opacity:1;}
 
   .fade-in{animation:fadeIn .28s ease both;}
@@ -82,12 +82,24 @@
   .stepper-hero .amt{font-size:34px;font-weight:800;color:var(--ink);display:flex;align-items:baseline;gap:6px;}
   .stepper-hero .amt .cur{font-size:14px;color:var(--text-faint);font-weight:600;}
 
-  .cta-primary{width:100%;padding:16px 18px;border:none;border-radius:100px;background:linear-gradient(135deg,#E7E9EB,#AEB5BB);color:#14171A;font-size:15px;font-weight:800;box-shadow:0 0 30px -4px rgba(199,205,210,.6);transition:transform .12s ease, background .15s ease, box-shadow .15s ease;}
-  .cta-primary:hover{background:linear-gradient(135deg,#D8DBDE,#9DA5AC);box-shadow:0 0 40px -2px rgba(199,205,210,.8);}
+  .cta-primary{width:100%;padding:16px 18px;border:none;border-radius:100px;position:relative;overflow:hidden;background:linear-gradient(135deg,#FFE9A8,#FFD147 45%,#C9971F 100%);color:#3A2B02;font-size:15px;font-weight:800;box-shadow:0 0 34px -4px rgba(255,209,71,.65);transition:transform .12s ease, background .15s ease, box-shadow .15s ease;}
+  .cta-primary::after{content:'';position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(115deg,transparent,rgba(255,255,255,.8),transparent);animation:cta-shine 3.6s ease-in-out infinite;}
+  @keyframes cta-shine{0%{left:-60%;}55%{left:130%;}100%{left:130%;}}
+  .cta-primary:hover{background:linear-gradient(135deg,#FFF0C0,#FFD966 45%,#D6A426 100%);box-shadow:0 0 44px -2px rgba(255,209,71,.85);}
   .cta-primary:active{transform:scale(.985);}
+
+  .gold-1{background:linear-gradient(120deg,#FFF6D8,#FFD966 35%,#B8860B 55%,#FFE99A 75%,#FFF6D8);background-size:250% auto;-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 0 16px rgba(255,209,71,.5);animation:gold-shimmer 3.2s ease-in-out infinite;}
+  @keyframes gold-shimmer{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+  .cta-primary .gold-1{background:linear-gradient(120deg,#5A4306,#3A2B02 35%,#5A4306 55%,#7A5C10 75%,#5A4306);background-size:250% auto;-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;}
 
   .secure-row{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;color:var(--text-faint);margin-top:14px;}
   .secure-row svg{width:13px;height:13px;}
+
+  .crypto-ticker{overflow:hidden;padding:7px 0;margin:0 0 2px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent);mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent);}
+  .crypto-ticker-track{display:flex;width:max-content;gap:26px;animation:crypto-scroll 24s linear infinite;}
+  .crypto-ticker-item{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-faint);white-space:nowrap;flex:none;}
+  .crypto-ticker-ico{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex:none;line-height:1;}
+  @keyframes crypto-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
   .occupant-line{font-size:12.5px;color:var(--text-faint);text-align:center;padding:16px 22px 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .occupant-line b{color:var(--text-soft);font-weight:600;}
@@ -313,6 +325,27 @@ const ICONS = {
 };
 const PLATFORM_ICON = { instagram:'instagram', x:'x', listado:'coin', link:'link' };
 
+/* Carrusel infinito de criptos: nombre + ícono circular, se arma una sola
+   vez acá y se repite duplicado en el HTML para que el loop sea perfecto. */
+const CRYPTO_TICKER_LIST = [
+  { name:'Bitcoin',   sym:'₿', bg:'#F7931A', dark:true  },
+  { name:'Ethereum',  sym:'Ξ', bg:'#627EEA', dark:false },
+  { name:'USDT',      sym:'₮', bg:'#26A17B', dark:false },
+  { name:'BNB',       sym:'B', bg:'#F0B90B', dark:true  },
+  { name:'Solana',    sym:'S', bg:'#9945FF', dark:false },
+  { name:'XRP',       sym:'X', bg:'#25A1DB', dark:true  },
+  { name:'Cardano',   sym:'A', bg:'#2467D3', dark:false },
+  { name:'Dogecoin',  sym:'D', bg:'#C2A633', dark:true  },
+  { name:'TRON',      sym:'T', bg:'#EF0027', dark:false },
+  { name:'Litecoin',  sym:'Ł', bg:'#A6A9AA', dark:true  },
+];
+function cryptoTickerHTML(){
+  const row = CRYPTO_TICKER_LIST.map(c =>
+    `<span class="crypto-ticker-item"><span class="crypto-ticker-ico" style="background:${c.bg};color:${c.dark ? '#14171A' : '#fff'}">${c.sym}</span>${c.name}</span>`
+  ).join('');
+  return `<div class="crypto-ticker"><div class="crypto-ticker-track">${row}${row}</div></div>`;
+}
+
 /* ============================================================
    CONEXIÓN AL BACKEND
    Si deployaste cima-backend en Vercel, pegá esa URL acá abajo
@@ -504,15 +537,17 @@ function landingHTML(){
   </div>
 
   <div class="hero">
-    <h1>¿Cuánto pagarías por el <em>puesto #1</em> de las cripto?</h1>
+    <h1>¿Cuánto pagarías por el <em>puesto <span class="gold-1">#1</span></em> de las cripto?</h1>
     <div class="stepper-hero">
       <button class="step-circle" id="hero-minus">–</button>
       <div class="amt mono">$${fmt(bidVal)}<span class="cur">USDT</span></div>
       <button class="step-circle" id="hero-plus">+</button>
     </div>
-    <button class="cta-primary" data-action="open-wizard" data-slot="1">Llévate el puesto #1 por $${fmt(bidVal)}</button>
+    <button class="cta-primary" data-action="open-wizard" data-slot="1">Llévate el puesto <span class="gold-1">#1</span> por $${fmt(bidVal)}</button>
     <div class="secure-row">${ICONS.shield} Pago manual verificado en USDT (TRC20)</div>
   </div>
+
+  ${cryptoTickerHTML()}
 
   <div class="occupant-line">${p1.occupied !== false ? `${esc(p1.url)} <b>en #1 hace ${p1.ago}</b>` : 'El puesto #1 está libre — sé el primero en tomarlo.'}</div>
 
@@ -856,7 +891,7 @@ function attachLandingEvents(){
   const heroPlus = document.getElementById('hero-plus');
   function syncHero(){
     document.querySelector('.stepper-hero .amt').innerHTML = `$${fmt(state.heroBid)}<span class="cur">USDT</span>`;
-    document.querySelector('.cta-primary').textContent = `Llévate el puesto #1 por $${fmt(state.heroBid)}`;
+    document.querySelector('.cta-primary').innerHTML = `Llévate el puesto <span class="gold-1">#1</span> por $${fmt(state.heroBid)}`;
   }
   if(heroMinus) heroMinus.addEventListener('click', ()=>{ state.heroBid = Math.max(nextMin, Math.round((state.heroBid-10)*100)/100); syncHero(); });
   if(heroPlus) heroPlus.addEventListener('click', ()=>{ state.heroBid = Math.round((state.heroBid+10)*100)/100; syncHero(); });
@@ -1096,8 +1131,8 @@ setInterval(async ()=>{
    ============================================================ */
 (function(){
   const DESKTOP_BREAKPOINT = 860; // mismo criterio que fuego criollo
-  const TOTAL_FRAMES_DESKTOP = 240; // <-- poné acá la cantidad real de frames (ej: 180)
-  const TOTAL_FRAMES_MOBILE = 239;  // <-- poné acá la cantidad real de frames (ej: 180)
+  const TOTAL_FRAMES_DESKTOP = 0; // <-- poné acá la cantidad real de frames (ej: 180)
+  const TOTAL_FRAMES_MOBILE = 0;  // <-- poné acá la cantidad real de frames (ej: 180)
 
   const isDesktop = window.innerWidth >= DESKTOP_BREAKPOINT;
   const CARPETA = isDesktop ? 'frames/bg-desktop' : 'frames/bg-mobile';
@@ -1116,8 +1151,8 @@ setInterval(async ()=>{
      el frame pasa a seguir 1:1 el scroll, a la velocidad que el usuario
      mueva el dedo. Si se queda quieto un rato, retoma el autoplay lento
      desde el frame en el que quedó. */
-  const AUTOPLAY_MS_POR_FRAME = 0; // más alto = autoplay más lento
-  const IDLE_PARA_RETOMAR = 0;     // ms sin scroll para retomar el autoplay
+  const AUTOPLAY_MS_POR_FRAME = 110; // más alto = autoplay más lento
+  const IDLE_PARA_RETOMAR = 900;     // ms sin scroll para retomar el autoplay
   let lastInteraction = -Infinity;
   let autoplayDir = 1;
   let autoplayAccum = 0;
