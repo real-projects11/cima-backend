@@ -340,8 +340,8 @@ function agoLabel(paidAtMs){
   return `hace ${Math.floor(h/24)} d`;
 }
 
-const increments = {1:2, 2:1.5, 3:1, 4:0.75, 5:0.5};
-const starts = {1:3, 2:2, 3:1.5, 4:1, 5:0.5};
+const increments = {1:100, 2:70, 3:50, 4:35, 5:20};
+const starts = {1:500, 2:350, 3:250, 4:175, 5:100};
 
 // Arranca sin nada — los 5 puestos se muestran "libres" hasta que loadPositions()
 // traiga el estado real del backend (o hasta que alguien los compre de verdad).
@@ -573,7 +573,7 @@ function wizardStep1HTML(){
   const isListado = w.platform === 'listado';
   const handleLabel = isLink ? 'URL de tu proyecto' : isListado ? 'Dónde está listada' : 'Usuario';
   const handlePlaceholder = isLink ? 'tuproyecto.com' : isListado ? 'pump.fun' : 'tuproyecto';
-  const ready = w.platform && w.handle && w.link;
+  const ready = w.platform && w.handle;
   return `
   ${wizTopbar('close-wizard')}
   ${wizHead('Armá tu cima', 'Primero: a dónde los llevás', 1)}
@@ -593,11 +593,6 @@ function wizardStep1HTML(){
         <input type="text" id="handle-input" placeholder="${handlePlaceholder}" value="${esc(w.handle)}">
       </div>
     </div>
-    <div class="field">
-      <div class="field-label"><span>Link externo</span></div>
-      <div class="desc" style="margin:-2px 0 8px;">A dónde va a ir la gente si toca el puesto en la página principal.</div>
-      <div class="input-wrap"><input type="text" id="link-input" placeholder="https://pump.fun/tu-token" value="${esc(w.link)}"></div>
-    </div>
     <button class="btn ${ready?'enabled':''}" id="step1-next" ${!ready?'disabled':''}>Listo, sigamos</button>
   </div>
   ${footerMini()}`;
@@ -610,7 +605,6 @@ function wizardStep2HTML(){
   ${wizTopbar('wizard-goto-1')}
   ${wizHead('Armá tu cima', 'Ahora: qué van a leer', 2)}
   ${confirmRow('LOS MANDAS A', domainFor(w.platform) + esc(w.handle))}
-  ${confirmRow('VAN A CAER EN', esc(w.link))}
   <div class="wiz-card fade-in">
     <h3>¿Qué querés que diga?</h3>
     <div class="desc">Un título y una línea. Las que te harían tocar a vos.</div>
@@ -654,7 +648,6 @@ function wizardStep3HTML(){
   ${wizTopbar('wizard-goto-2')}
   ${wizHead('Armá tu cima', 'Listo: mirá cómo queda', 3)}
   ${confirmRow('LOS MANDAS A', domain + esc(w.handle))}
-  ${confirmRow('VAN A CAER EN', esc(w.link))}
   ${confirmRow('DICE', esc(w.title) + ' — ' + esc(w.desc))}
   <div class="wiz-card fade-in">
     <h3>Este es tu cima</h3>
@@ -862,8 +855,8 @@ function attachLandingEvents(){
     document.querySelector('.stepper-hero .amt').innerHTML = `$${fmt(state.heroBid)}<span class="cur">USDT</span>`;
     document.querySelector('.cta-primary').textContent = `Llévate el puesto #1 por $${fmt(state.heroBid)}`;
   }
-  if(heroMinus) heroMinus.addEventListener('click', ()=>{ state.heroBid = Math.max(nextMin, Math.round((state.heroBid-1)*100)/100); syncHero(); });
-  if(heroPlus) heroPlus.addEventListener('click', ()=>{ state.heroBid = Math.round((state.heroBid+1)*100)/100; syncHero(); });
+  if(heroMinus) heroMinus.addEventListener('click', ()=>{ state.heroBid = Math.max(nextMin, Math.round((state.heroBid-10)*100)/100); syncHero(); });
+  if(heroPlus) heroPlus.addEventListener('click', ()=>{ state.heroBid = Math.round((state.heroBid+10)*100)/100; syncHero(); });
   const ctaBtn = document.querySelector('.cta-primary');
   if(ctaBtn) ctaBtn.addEventListener('click', (e)=>{
     e.preventDefault();
@@ -885,21 +878,17 @@ function attachWizardEvents(){
     el.addEventListener('click', ()=>{ w.platform = el.getAttribute('data-platform'); render(); });
   });
   const handleInput = document.getElementById('handle-input');
-  const linkInput = document.getElementById('link-input');
   function syncStep1Ready(){
     const btn = document.getElementById('step1-next');
-    const ready = w.platform && w.handle && w.link;
+    const ready = w.platform && w.handle;
     if(btn){ btn.disabled = !ready; btn.classList.toggle('enabled', !!ready); }
   }
   if(handleInput){
     handleInput.focus();
     handleInput.addEventListener('input', (e)=>{ w.handle = e.target.value; syncStep1Ready(); });
   }
-  if(linkInput){
-    linkInput.addEventListener('input', (e)=>{ w.link = e.target.value; syncStep1Ready(); });
-  }
   const step1Next = document.getElementById('step1-next');
-  if(step1Next) step1Next.addEventListener('click', ()=>{ if(w.platform && w.handle && w.link){ state.view='w2'; render(); } });
+  if(step1Next) step1Next.addEventListener('click', ()=>{ if(w.platform && w.handle){ w.link = w.platform === 'link' ? w.handle : ''; state.view='w2'; render(); } });
 
   const tickerInput = document.getElementById('ticker-input');
   const titleInput = document.getElementById('title-input');
