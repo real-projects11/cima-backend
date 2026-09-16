@@ -1096,8 +1096,8 @@ setInterval(async ()=>{
    ============================================================ */
 (function(){
   const DESKTOP_BREAKPOINT = 860; // mismo criterio que fuego criollo
-  const TOTAL_FRAMES_DESKTOP = 240; // <-- poné acá la cantidad real de frames (ej: 180)
-  const TOTAL_FRAMES_MOBILE = 239;  // <-- poné acá la cantidad real de frames (ej: 180)
+  const TOTAL_FRAMES_DESKTOP = 0; // <-- poné acá la cantidad real de frames (ej: 180)
+  const TOTAL_FRAMES_MOBILE = 0;  // <-- poné acá la cantidad real de frames (ej: 180)
 
   const isDesktop = window.innerWidth >= DESKTOP_BREAKPOINT;
   const CARPETA = isDesktop ? 'frames/bg-desktop' : 'frames/bg-mobile';
@@ -1116,8 +1116,8 @@ setInterval(async ()=>{
      el frame pasa a seguir 1:1 el scroll, a la velocidad que el usuario
      mueva el dedo. Si se queda quieto un rato, retoma el autoplay lento
      desde el frame en el que quedó. */
-  const AUTOPLAY_MS_POR_FRAME = 500; // más alto = autoplay más lento
-  const IDLE_PARA_RETOMAR = 450;     // ms sin scroll para retomar el autoplay
+  const AUTOPLAY_MS_POR_FRAME = 110; // más alto = autoplay más lento
+  const IDLE_PARA_RETOMAR = 900;     // ms sin scroll para retomar el autoplay
   let lastInteraction = -Infinity;
   let autoplayDir = 1;
   let autoplayAccum = 0;
@@ -1145,9 +1145,19 @@ setInterval(async ()=>{
     ctx.drawImage(img, dx, dy, dw, dh);
   }
 
+  let visible = false;
   function mostrarCanvas(){
-    // Fade-in elegante una vez que hay algo (frame real o negro) para mostrar
+    if(visible) return;
+    visible = true;
     requestAnimationFrame(() => canvas.classList.add('is-visible'));
+  }
+
+  function frame0Listo(){
+    // Algunos navegadores móviles todavía no asentaron el alto real de
+    // pantalla (barra de direcciones) en este punto — remedimos antes de
+    // mostrar, para no dibujar con un tamaño viejo.
+    resize();
+    mostrarCanvas();
   }
 
   function precargar(){
@@ -1156,10 +1166,14 @@ setInterval(async ()=>{
       const img = new Image();
       if(i === 0){
         img.onerror = () => { hasFrames = false; pintarNegro(); mostrarCanvas(); };
-        img.onload = () => { dibujar(currentFrame); mostrarCanvas(); };
+        img.onload = frame0Listo;
       }
       img.src = nombreFrame(i);
       images[i] = img;
+      // Red de seguridad: si el frame 0 ya estaba en caché del navegador,
+      // "complete" puede quedar true ANTES de que llegue a engancharse el
+      // onload de arriba (o directamente no disparar). Lo chequeamos a mano.
+      if(i === 0 && img.complete && img.naturalWidth){ frame0Listo(); }
     }
   }
 
@@ -1206,6 +1220,11 @@ setInterval(async ()=>{
 
   window.addEventListener('resize', resize, { passive: true });
   window.addEventListener('scroll', onInteraccion, { passive: true });
+  // Otra red de seguridad: si por lo que sea nada de lo anterior mostró el
+  // canvas (imagen tardía, evento perdido, etc.), en cuanto la página termina
+  // de cargar del todo forzamos una remedición + redibujo + fade-in.
+  window.addEventListener('load', () => { resize(); mostrarCanvas(); }, { once: true });
+
   resize();
   precargar();
   actualizarPorScroll();
