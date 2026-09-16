@@ -1116,8 +1116,8 @@ setInterval(async ()=>{
      el frame pasa a seguir 1:1 el scroll, a la velocidad que el usuario
      mueva el dedo. Si se queda quieto un rato, retoma el autoplay lento
      desde el frame en el que quedó. */
-  const AUTOPLAY_MS_POR_FRAME = 110; // más alto = autoplay más lento
-  const IDLE_PARA_RETOMAR = 900;     // ms sin scroll para retomar el autoplay
+  const AUTOPLAY_MS_POR_FRAME = 0; // más alto = autoplay más lento
+  const IDLE_PARA_RETOMAR = 000;     // ms sin scroll para retomar el autoplay
   let lastInteraction = -Infinity;
   let autoplayDir = 1;
   let autoplayAccum = 0;
