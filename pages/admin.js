@@ -152,6 +152,7 @@ export default function Admin() {
 
               <div className="detailGrid">
                 <div><span className="detailLabel">Proyecto</span>{p.title}</div>
+                <div><span className="detailLabel">Ticker</span>{p.ticker || '—'}</div>
                 <div><span className="detailLabel">Descripción</span>{p.desc}</div>
                 <div><span className="detailLabel">Destino</span>{domainFor(p.platform)}{p.handle}</div>
                 {p.link && <div><span className="detailLabel">Link externo</span>{p.link}</div>}
