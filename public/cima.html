@@ -387,12 +387,27 @@ const starts = {1:500, 2:350, 3:250, 4:175, 5:100};
 // traiga el estado real del backend (o hasta que alguien los compre de verdad).
 let projects = [1,2,3,4,5].map(emptyPosition);
 
-// "También publicados" (#6+) todavía no tiene backend propio — arranca vacío también.
-const others = [];
+// "También publicados" (#6+) = historial de quienes tuvieron un puesto top-5
+// y los desplazaron pagando más. Arranca vacío hasta que loadDisplaced() traiga
+// lo real del backend.
+let others = [];
 
-/* NOTA: "others" (#6 en adelante) sigue siendo mock — el backend actual solo
-   maneja los 5 puestos pagos del top. Cuando sumemos la sección de "listado
-   libre" del prompt original, esto se conecta igual que loadPositions(). */
+async function loadDisplaced(){
+  try{
+    const data = await apiFetch('/api/displaced');
+    if(data && Array.isArray(data.displaced)){
+      others = data.displaced.map(d => ({
+        ...d,
+        occupied: true,
+        clicks: d.clicks ?? (d.price ? Math.round(d.price * 13) + 24 : 0),
+        ago: d.displacedAt ? agoLabel(d.displacedAt) : null,
+      }));
+    }
+  } catch(err){
+    console.warn('No se pudo cargar el historial de desplazados:', err.message);
+  }
+}
+
 async function loadPositions(){
   try{
     const data = await apiFetch('/api/positions');
@@ -440,7 +455,9 @@ function destinationUrl(p){
 }
 
 function statusTag(p){
-  if(p.protectedHoursLeft > 24){
+  if(p.protectedIndefinite){
+    return `<div class="status-tag status-protected">Protegido</div>`;
+  } else if(p.protectedHoursLeft > 24){
     return `<div class="status-tag status-protected">Protegido · ${Math.round(p.protectedHoursLeft)}h restantes</div>`;
   } else if(p.protectedHoursLeft > 0){
     const h = Math.floor(p.protectedHoursLeft), m = Math.round((p.protectedHoursLeft-h)*60);
@@ -537,7 +554,7 @@ function landingHTML(){
   </div>
 
   <div class="hero">
-    <h1>¿Cuánto pagarías por el <em>puesto <span class="gold-1">#1</span></em> de las cripto?</h1>
+    <h1>¿Pagarías 500 dólares para ser el <em><span class="gold-1">#1</span></em> de criptos?</h1>
     <div class="stepper-hero">
       <button class="step-circle" id="hero-minus">–</button>
       <div class="amt mono">$${fmt(bidVal)}<span class="cur">USDT</span></div>
@@ -563,7 +580,7 @@ function landingHTML(){
     <div class="footer-tag">cima. — tuyo hasta que alguien pague más</div>
     <div class="footer-links">
       <a href="#" class="pub" data-action="open-wizard-any">Publicar tu proyecto</a>
-      <a href="#">Términos</a>
+      <a href="/terminos.html" target="_blank" rel="noopener noreferrer">Términos</a>
       <a href="https://x.com/geo_ecom" target="_blank" rel="noopener noreferrer">@geo_ecom</a>
     </div>
     <div class="footer-legal">
@@ -730,7 +747,7 @@ function footerMini(){
   return `
   <div class="footer">
     <div class="footer-tag">cima. — tuyo hasta que alguien pague más</div>
-    <div class="footer-links"><a href="#">Términos</a><a href="https://x.com/geo_ecom" target="_blank" rel="noopener noreferrer">@geo_ecom</a></div>
+    <div class="footer-links"><a href="/terminos.html" target="_blank" rel="noopener noreferrer">Términos</a><a href="https://x.com/geo_ecom" target="_blank" rel="noopener noreferrer">@geo_ecom</a></div>
     <div class="footer-legal">cima. es un experimento. Los puestos se compran y se pierden: cualquiera puede pasarte pagando más. Si tuviste un problema, <a href="#">mandanos un DM</a>.</div>
   </div>`;
 }
@@ -743,7 +760,7 @@ function confirmSheetHTML(){
       <h2>Estás comprando el <span class="g">puesto #${w.slot}</span> por $${fmt(w.bid)}</h2>
       <div class="check-row">
         <input type="checkbox" id="disclaimer-check">
-        <label for="disclaimer-check">Entiendo que cima. es un experimento y mi pago <b>no garantiza tráfico ni resultados</b>, y acepto los <a href="#">Términos y condiciones</a>.</label>
+        <label for="disclaimer-check">Entiendo que cima. es un experimento y mi pago <b>no garantiza tráfico ni resultados</b>, y acepto los <a href="/terminos.html" target="_blank" rel="noopener noreferrer">Términos y condiciones</a>.</label>
       </div>
       <button class="btn" id="go-pay-btn" disabled>Ir a pagar $${fmt(w.bid)}</button>
       <a href="#" class="sheet-cancel" data-action="close-confirm">Volver</a>
@@ -1107,7 +1124,7 @@ setInterval(()=>{
 // así ves si alguien más compró/desplazó un puesto sin tener que recargar.
 setInterval(async ()=>{
   if(state.view === 'landing'){
-    await loadPositions();
+    await Promise.all([loadPositions(), loadDisplaced()]);
     render();
   }
 }, 20000);
@@ -1266,7 +1283,7 @@ setInterval(async ()=>{
   requestAnimationFrame(pasoAutoplay);
 })();
 
-loadPositions().then(render);
+Promise.all([loadPositions(), loadDisplaced()]).then(render);
 </script>
 </body>
 </html>

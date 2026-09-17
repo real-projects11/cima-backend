@@ -15,6 +15,7 @@ export default function Admin() {
   const [tokenStatus, setTokenStatus] = useState(null); // null | 'ok' | 'error'
   const [positions, setPositions] = useState([]);
   const [pending, setPending] = useState([]);
+  const [displaced, setDisplaced] = useState([]);
   const [msg, setMsg] = useState(null);
   const [busySlot, setBusySlot] = useState(null);
 
@@ -35,6 +36,12 @@ export default function Admin() {
       const res = await fetch('/api/positions');
       const data = await res.json();
       setPositions(data.positions || []);
+    } catch (e) {}
+
+    try {
+      const resD = await fetch('/api/displaced');
+      const dataD = await resD.json();
+      setDisplaced(dataD.displaced || []);
     } catch (e) {}
 
     if (!token) { setPending([]); return; }
@@ -85,6 +92,43 @@ export default function Admin() {
       const data = await res.json();
       if (!res.ok) setMsg({ ok: false, text: `Puesto #${slot}: ${data.error}` });
       else setMsg({ ok: true, text: `Puesto #${slot} — acción "${action}" aplicada ✓` });
+    } catch (e) {
+      setMsg({ ok: false, text: 'No se pudo conectar con el servidor' });
+    }
+    setBusySlot(null);
+    load();
+  }
+
+  async function setProtectionMode(slot, mode) {
+    setMsg(null);
+    setBusySlot(slot + 'protection');
+    try {
+      const res = await fetch(`/api/admin/positions/${slot}/protection`, {
+        method: 'POST',
+        headers: { 'x-admin-token': token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode }),
+      });
+      const data = await res.json();
+      if (!res.ok) setMsg({ ok: false, text: `Puesto #${slot}: ${data.error}` });
+      else setMsg({ ok: true, text: `Puesto #${slot} — protección actualizada ✓` });
+    } catch (e) {
+      setMsg({ ok: false, text: 'No se pudo conectar con el servidor' });
+    }
+    setBusySlot(null);
+    load();
+  }
+
+  async function deleteDisplacedEntry(entry) {
+    if (!window.confirm(`¿Borrar "${entry.name}" del historial de desplazados?`)) return;
+    setMsg(null);
+    setBusySlot('displaced' + entry.id);
+    try {
+      const res = await fetch(`/api/admin/displaced/${entry.id}/delete`, {
+        method: 'POST',
+        headers: { 'x-admin-token': token },
+      });
+      const data = await res.json();
+      if (!res.ok) setMsg({ ok: false, text: `Historial: ${data.error}` });
     } catch (e) {
       setMsg({ ok: false, text: 'No se pudo conectar con el servidor' });
     }
@@ -196,9 +240,37 @@ export default function Admin() {
                 <>
                   <div className="posName">{p.name}</div>
                   <div className="posMeta">
-                    ${p.price} · {p.protectedHoursLeft.toFixed(1)}h de garantía restante
+                    ${p.price} · {p.protectedIndefinite ? 'protección indefinida' : `${p.protectedHoursLeft.toFixed(1)}h de garantía restante`}
                   </div>
                   {p.locked && <div className="lockTag">lock activo ({p.lockStatus})</div>}
+
+                  <div className="protectionRow">
+                    <span className="protectionLabel">Protección</span>
+                    <div className="switchGroup">
+                      <button
+                        className={`switchBtn ${!p.protectedIndefinite && p.protectedHoursLeft <= 0 ? 'switchOff' : ''}`}
+                        disabled={busySlot === p.rank + 'protection'}
+                        onClick={() => setProtectionMode(p.rank, 'off')}
+                      >
+                        Sin protección
+                      </button>
+                      <button
+                        className={`switchBtn ${!p.protectedIndefinite && p.protectedHoursLeft > 0 ? 'switchOn' : ''}`}
+                        disabled={busySlot === p.rank + 'protection'}
+                        onClick={() => setProtectionMode(p.rank, '48h')}
+                      >
+                        48hs
+                      </button>
+                      <button
+                        className={`switchBtn ${p.protectedIndefinite ? 'switchOn' : ''}`}
+                        disabled={busySlot === p.rank + 'protection'}
+                        onClick={() => setProtectionMode(p.rank, 'indefinite')}
+                      >
+                        Indefinida
+                      </button>
+                    </div>
+                  </div>
+
                   <button
                     className="btn outline"
                     disabled={busySlot === p.rank + 'evict'}
@@ -213,6 +285,30 @@ export default function Admin() {
                   {p.locked && <div className="lockTag">lock activo ({p.lockStatus})</div>}
                 </div>
               )}
+            </div>
+          );
+        })}
+      </div>
+
+      <h2 className="sectionTitle">Puestos desplazados (historial)</h2>
+      {displaced.length === 0 && <p className="muted">Todavía no desplazaron a nadie.</p>}
+      <div className="grid">
+        {displaced.map((d) => {
+          const c = RANK_COLORS[d.rank];
+          return (
+            <div className="card posCard" key={d.id} style={{ borderColor: c.bg, opacity: 0.85 }}>
+              <div className="badge" style={{ background: c.bg }}>fue #{d.rank}</div>
+              <div className="posName">{d.name}</div>
+              <div className="posMeta">
+                ${d.price} · desplazado {fmtDate(d.displacedAt)}
+              </div>
+              <button
+                className="btn outline"
+                disabled={busySlot === 'displaced' + d.id}
+                onClick={() => deleteDisplacedEntry(d)}
+              >
+                Borrar del historial
+              </button>
             </div>
           );
         })}
@@ -254,6 +350,13 @@ export default function Admin() {
         .posMeta { font-size: 12.5px; color: #6B7075; margin-top: 2px; }
         .posEmpty { color: #9CA0A6; font-size: 13.5px; }
         .lockTag { font-size: 11px; color: #A05A0C; margin-top: 6px; }
+        .protectionRow { margin: 10px 0 12px; }
+        .protectionLabel { display: block; font-size: 10.5px; font-weight: 700; color: #9CA0A6; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
+        .switchGroup { display: flex; gap: 6px; }
+        .switchBtn { flex: 1; padding: 7px 8px; border-radius: 8px; border: 1.5px solid #E2E4DE; background: #F7F8F5; font-size: 12px; font-weight: 700; color: #6B7075; cursor: pointer; }
+        .switchBtn.switchOn { background: #12664F; border-color: #12664F; color: #fff; }
+        .switchBtn.switchOff { background: #EDEFEB; border-color: #C7CBC3; color: #14171A; }
+        .switchBtn:disabled { opacity: .5; cursor: default; }
         .toast { padding: 10px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
         .toast.ok { background: #E3F1EC; color: #146B52; }
         .toast.err { background: #FBE7E2; color: #B34A25; }
